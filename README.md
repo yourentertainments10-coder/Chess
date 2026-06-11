@@ -1,4 +1,4 @@
-# Chess Game (React)
+# Chess Game 
 
 A modern chess application built with React featuring local multiplayer, AI-powered gameplay, and shareable game sessions. The project includes a custom chess engine with complete move validation, special chess rules, and multiple AI difficulty levels powered by minimax search and evaluation algorithms.
 
