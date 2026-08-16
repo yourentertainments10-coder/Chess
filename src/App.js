@@ -183,6 +183,20 @@ function App() {
   const activeOver = isOnline ? online.state?.status : gameOver;
   const activeClocks = (isOnline ? onlineClocks : clocks) || { white: 0, black: 0 };
 
+  // A vanished room is terminal, so say so plainly rather than leaving a stale
+  // board on screen that no longer accepts moves.
+  if (isOnline && online.gone) {
+    return (
+      <div className="menu-screen">
+        <div className="menu-mark">♞</div>
+        <h1 className="menu-title">Game Over</h1>
+        <div className="menu-rule" />
+        <p className="menu-subtitle">{online.error}</p>
+        <button className="btn primary big" onClick={backToMenu}>Back to Main Menu</button>
+      </div>
+    );
+  }
+
   if (!activeGame) {
     return (
       <div className="menu-screen">

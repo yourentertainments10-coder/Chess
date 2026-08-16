@@ -86,6 +86,10 @@ export function useOnlineRoom(session) {
   const [game, setGame] = useState(null);
   const [error, setError] = useState(null);
   const [pending, setPending] = useState(false);
+  // Set when the room no longer exists, which is terminal - retrying cannot
+  // bring it back. Happens if the server restarted or slept (free hosting keeps
+  // rooms in memory) or if the room expired.
+  const [gone, setGone] = useState(false);
 
   const versionRef = useRef(0);
   const abortRef = useRef(null);
@@ -95,6 +99,20 @@ export function useOnlineRoom(session) {
     setState(next);
     setGame(hydrate(next));
   }, []);
+
+  // Switching rooms (or leaving one) has to clear everything from the previous
+  // room. Without this a room that ended as "gone" would immediately mark the
+  // next game gone too, and a stale version would make the first poll skip
+  // updates. Declared before the seeding effect so it cannot wipe fresh state.
+  useEffect(() => {
+    setGone(false);
+    setError(null);
+    versionRef.current = 0;
+    if (!session?.code) {
+      setState(null);
+      setGame(null);
+    }
+  }, [session?.code]);
 
   // Seed from the response that created or joined the room.
   useEffect(() => {
@@ -126,6 +144,12 @@ export function useOnlineRoom(session) {
           }
         } catch (err) {
           if (cancelled || err.name === 'AbortError') return;
+          if (err.status === 404) {
+            // The room is gone for good; polling it again is pointless.
+            setGone(true);
+            setError('This game is no longer available. The server may have restarted.');
+            return;
+          }
           setError(err.message);
           // Back off briefly so a dead server is not hammered.
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -172,5 +196,5 @@ export function useOnlineRoom(session) {
     }
   }, [session?.code, session?.token, applyState]);
 
-  return { state, game, error, pending, sendMove, resign };
+  return { state, game, error, gone, pending, sendMove, resign };
 }
