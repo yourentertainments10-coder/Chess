@@ -1,208 +1,131 @@
-# Chess Game 
+# Chess Game (React)
 
-A modern chess application built with React featuring local multiplayer, AI-powered gameplay, and shareable game sessions. The project includes a custom chess engine with complete move validation, special chess rules, and multiple AI difficulty levels powered by minimax search and evaluation algorithms.
+A React-based chess game with:
+- Local play
+- Play vs Bot (difficulty/rating levels)
+- Play with a friend via shareable game link
+
+This project includes a custom chess rules engine and a basic bot using evaluation + minimax (higher difficulties).
+
+---
 
 ## Features
 
-### Game Modes
+### Game modes
+- **Local**: Two players on the same device.
+- **Play vs Bot**: Bot strength varies by selected rating.
+- **Play with Friend**: Generates a shareable URL containing a `game` id.
+- **Online Match**: UI stub (disabled / coming soon).
 
-* Local Multiplayer (2 players on the same device)
-* Play Against AI Bot
-* Play with Friends via Shareable Game Links
-* Online Match Interface (Coming Soon)
+### Chess rules (engine)
+Implemented in `src/ChessGame.js`:
+- Piece movement for: **King, Queen, Rook, Bishop, Knight, Pawn**
+- **Check** detection
+- **Checkmate** detection
+- **Castling** (basic)
+- **En passant**
+- **Pawn promotion** (auto-promotes to **Queen**)
 
-### Chess Engine
+### Bot
+Implemented in `src/ChessGame.js`:
+- **Easy**: random legal move
+- **Medium**: “smart” move selection using evaluation weights
+- **Hard**: minimax with alpha-beta pruning + quiescence search
 
-* Complete Piece Movement Logic
-* Check Detection
-* Checkmate Detection
-* Castling Support
-* En Passant Support
-* Automatic Pawn Promotion
-* Move Validation
-* Turn Management
+Bot strength is controlled by `setBotLevel(level)`.
 
-### AI Opponent
-
-#### Easy
-
-* Random legal move generation
-
-#### Medium
-
-* Position evaluation using weighted scoring
-
-#### Hard
-
-* Minimax Algorithm
-* Alpha-Beta Pruning
-* Quiescence Search
-* Strategic Move Selection
-
-### Additional Features
-
-* Interactive Chess Board
-* Legal Move Highlighting
-* Check Warning Indicators
-* Turn-Based Timer System
-* Game State Management
-* Shareable Match Links
-
-## Technology Stack
-
-* React.js
-* JavaScript (ES6+)
-* HTML5
-* CSS3
-* Custom Chess Engine
-* Minimax Algorithm
-* Alpha-Beta Pruning
+---
 
 ## Project Structure
 
-```text
-.
-├── public/
-│   ├── index.html
-│   └── favicon.ico
-│
-├── src/
-│   ├── App.js
-│   ├── ChessGame.js
-│   ├── ChessBoard.js
-│   ├── GameModeSelector.js
-│   ├── App.css
-│   ├── index.css
-│   └── index.js
-│
-├── test_chess.js
-├── test_edge_cases.js
-├── package.json
-└── README.md
-```
+- `public/`
+  - `index.html` (CRA template)
+  - `favicon.ico`
+- `src/`
+  - `App.js`: App entry + game loop, bot moves, timer, game end checks, sharing
+  - `ChessGame.js`: Core chess engine + bot logic + evaluation/minimax
+  - `ChessBoard.js`: Visual board + square highlighting + check highlighting
+  - `GameModeSelector.js`: Mode selection UI and bot level picker
+  - `App.css`, `index.css`: Styling
+  - `index.js`: ReactDOM bootstrap
+- `test_chess.js`: Simple bot move generation test
+- `test_edge_cases.js`: Bot move generation tests across difficulty levels
+- `package.json`: Dependencies and scripts
 
-## How It Works
+---
 
-### 1. Game Initialization
+## How to Run
 
-* User selects a game mode.
-* The chess board is initialized with standard piece placement.
-* Game state and timers are created.
-
-### 2. Move Validation
-
-The custom chess engine:
-
-* Validates piece movement
-* Checks legal destinations
-* Prevents illegal moves
-* Ensures king safety
-* Applies special chess rules
-
-### 3. AI Decision Making
-
-Depending on difficulty level:
-
-* Easy: Random move selection
-* Medium: Position evaluation and weighted scoring
-* Hard: Minimax search with Alpha-Beta pruning
-
-### 4. Game State Monitoring
-
-The engine continuously checks:
-
-* Check conditions
-* Checkmate conditions
-* Turn changes
-* Timer expiration
-* Special move availability
-
-## AI Architecture
-
-### Position Evaluation
-
-The bot evaluates:
-
-* Material advantage
-* Piece activity
-* Board control
-* Tactical opportunities
-
-### Search Algorithm
-
-Hard mode uses:
-
-* Minimax Search
-* Alpha-Beta Pruning
-* Quiescence Search
-
-to determine the strongest available move.
-
-## Installation
-
-### Clone Repository
-
-```bash
-git clone <repository-url>
-```
-
-### Install Dependencies
-
+### 1) Install dependencies
 ```bash
 npm install
 ```
 
-### Start Development Server
-
+### 2) Start the dev server
 ```bash
 npm start
 ```
 
-### Run Tests
-
+### 3) Run tests (React CRA)
 ```bash
 npm test
 ```
 
-### Run Engine Tests
-
+### 4) Run provided JS scripts (engine smoke tests)
+These are simple Node-style scripts that import `src/ChessGame.js`:
 ```bash
 node test_chess.js
 node test_edge_cases.js
 ```
 
-## Screenshots
+---
 
-### Home Screen
+## Usage
 
-![Home](screenshots/home.png)
+1. Start the app.
+2. Select a game mode:
+   - **Play Local** or **Play vs Bot** or **Play with Friend**.
+3. Click squares to move pieces:
+   - Click a piece of the side whose turn it is.
+   - Click a destination square.
+4. If playing vs bot, the bot moves automatically when it is Black’s turn.
+5. Timer: the app tracks a clock for both sides and ends the game on timeout.
+6. If playing with a friend, use **Share Game Link**.
 
-### Chess Board
+---
 
-![Board](screenshots/board.png)
+## Key Implementation Details
 
-### AI Gameplay
+### Board representation
+- The board is an **8x8 array** of pieces or `null`.
+- Each piece is an object with:
+  - `color`: `'white' | 'black'`
+  - `type`: `'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn'`
+  - plus piece-specific state (e.g., `hasMoved` for king/rook/pawn)
 
-![Bot](screenshots/bot-game.png)
+### Move validation
+- `ChessGame.makeMove(fromRow, fromCol, toRow, toCol)`:
+  - Ensures the piece belongs to the current turn
+  - Ensures destination is in `getPossibleMoves`
+  - Rejects moves that would leave the moving side’s king in check via `wouldLeaveKingInCheck`
+  - Applies special rules: castling, en-passant, promotion
 
-### Friend Mode
+### Bot
+- `getBotMove()` chooses moves based on `botLevel`.
+- Medium uses `getSmartMove()` with evaluation weights.
+- Hard uses `minimax()` (with pruning) and `quiescenceSearch()`.
 
-![Friend Mode](screenshots/friend-mode.png)
+---
 
-## Future Improvements
+## Notes / Limitations (current engine)
+- Castling is handled with simplified checks based on emptiness and rook/king move state.
+- Checkmate detection relies on enumerating possible moves and verifying king safety.
+- Online match is not implemented (disabled in `GameModeSelector`).
+- Friend mode currently only creates a local game with the provided `gameId` (no server sync).
 
-* Multiplayer Server Synchronization
-* Real-Time Online Matches
-* ELO Rating System
-* Move History Analysis
-* Game Replay System
-* Chess Opening Database
-* Stockfish Integration
+---
 
-## Author
+## License
 
-**Anuj Srivastava**
-
-Aspiring Full-Stack Developer | React | Python | AI | Data Science
-
+Not specified in the repository. Add your preferred license text if needed.
 

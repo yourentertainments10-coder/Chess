@@ -1,17 +1,39 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Georgia', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f0d9b5;
+  background-color: #0d1120;
+  color: #e6e9f5;
 }
 
-h1 {
-  color: #333;
+/* Numerals, clocks and notation read better in a sans face */
+.clock,
+.move-san,
+.move-num,
+.chip-label,
+.material-advantage {
+  font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
 }
 
-h3 {
-  color: #555;
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbars styled to match the dark panels */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #131a30;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #313d68;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #45538c;
 }

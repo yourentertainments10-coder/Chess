@@ -1,0 +1,14 @@
+# Render blueprint. With this file in the repo root you can pick
+# "New > Blueprint" in Render and it configures the service for you, instead of
+# filling the build and start commands in by hand.
+services:
+  - type: web
+    name: gambit-board
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node server/index.mjs
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
