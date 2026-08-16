@@ -10,19 +10,41 @@ import ChessGame from './ChessGame.mjs';
 
 const SEAT_KEY = code => `chess:seat:${code}`;
 
+// "Request failed (500)" tells a player nothing. The two things that actually
+// go wrong are the server being unreachable and the server saying no, so name
+// them plainly and, for the local case, say how to fix it.
+const UNREACHABLE =
+  'Cannot reach the game server. If you are running this locally, start it in ' +
+  'another terminal with "npm run server".';
+
 async function request(url, options = {}) {
-  const response = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+  } catch (err) {
+    // fetch only rejects when the request never reached a server at all.
+    if (err.name === 'AbortError') throw err;
+    const error = new Error(UNREACHABLE);
+    error.unreachable = true;
+    throw error;
+  }
+
   let payload = null;
   try {
     payload = await response.json();
   } catch {
     payload = null;
   }
+
   if (!response.ok) {
-    const error = new Error(payload?.error || `Request failed (${response.status})`);
+    // A 5xx with no JSON body is the dev proxy or the host failing to reach the
+    // server, not the game rejecting anything.
+    const message = payload?.error
+      || (response.status >= 500 ? UNREACHABLE : `Request failed (${response.status})`);
+    const error = new Error(message);
     error.status = response.status;
     throw error;
   }
